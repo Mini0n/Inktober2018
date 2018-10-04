@@ -32,17 +32,20 @@
               <div class="form-group">
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="firstDoseCheck">
+                    <input class="form-check-input" type="checkbox" value="doseCheck" id="firstDoseCheck" 
+                           v-model='firstDose' @change="calculate(weight)">
                     <label class="form-check-label" for="firstDoseCheck">
                       1st time | high sensitivity
                     </label>
                 </div>
 
-                <input type="text" class="form-control" id="weightEdit" aria-describedby="weightEdit" placeholder="Your weight in kgs">
+                <input type="ntext" class="form-control" id="weightEdit" v-model="weight" @keyup="calculate()"
+                       aria-describedby="weightEdit" placeholder="Your weight in kgs">
                 <small id="weightEdit" class="form-text text-muted">Always check your stuff, always from someone you trust</small>
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="redoseCheck">
+                    <input class="form-check-input" type="checkbox" value="redose" id="redoseCheck" 
+                           v-model='redose' @change="calculateRedose()">
                     <label class="form-check-label" for="redoseCheck">
                       redose
                     </label>
@@ -55,8 +58,18 @@
 
 
 
-            <div class="col">
-              results
+            <div class="col results">
+              <div class="dose row text-center">
+                <div class="col">
+                  <p>{{dose}}</p>
+                </div>
+              </div>
+              <div class="redose row" v-if="redose">
+                <div class="col">
+                  <small class="form-text text-muted redose-small">ONLY AFTER 2.5-3hrs</small>
+                  <p>{{redoseVal}}</p>
+                </div>
+              </div>
             </div>
 
 
@@ -69,10 +82,7 @@
     <!-- status bar -->
 
     <div class="status-bar row align-items-end">
-      <div class="col-2 status-panel" style="border-left: 0px;">
-        by Mini0n
-      </div>
-      <div class="col-9 status-panel">
+      <div class="col-11 status-panel">
         MDMA dosage calculator...
       </div>
       <div class="col status-panel about-panel">
@@ -96,7 +106,66 @@ var app = new Vue({
   el: '#app',
   data: {
     message: 'Hello Vue!',
-    title: '= MDose | Inktober 2018.1.Pousonus ='
+    title: '= MDose | Inktober 2018.1.Pousonus =',
+    redose: false,
+    firstDose: false,
+    weight: '',
+    dose: '...',
+    redoseVal: '...',
+    timer: null
+  },
+  methods: {
+    calculate: function(){
+      multiplier = this.firstDose ? 0.85 : 1.5;
+      
+      console.log('weight:' + this.weight);
+
+      res = this.weight * multiplier;
+
+      if (isNaN((res))){ 
+        this.dose = '???'; 
+      } else {
+        this.dose = Number(res).toFixed(0) + 'mg';
+        if (this.redose){ this.calculateRedose() }
+        // temp = Number(res).toFixed(0);
+        // if (this.dose == '...'){ this.dose = 0; }
+        // console.log(temp);
+        
+        // this.writeDoseValue(this.dose, temp)
+
+      }
+    },
+
+    calculateRedose: function(){
+      res = (String(this.dose).replace('mg',''))/2;
+      if (isNaN((res))){ 
+        this.redoseVal = '???'; 
+      } else {
+        this.redoseVal = Number(res).toFixed(0) + 'mg';
+      }
+    },
+
+    writeDoseValue: function(init, end){
+      
+      multiplier = (parseFloat(init) < parseFloat(end)) ? 1 : -1;
+
+      console.log('from: ' + init + ' -> ' + end + ' : ' + multiplier);
+      
+
+      timer = setInterval(
+        (init, end, multiplier) => {
+          if (this.dose == end){
+            this.dose + 'mg';
+            clearTimeout(timer);
+          } else {
+            this.dose = Number(parseInt(this.dose) + multiplier).toFixed(0);
+          }
+        }
+        
+        
+        
+        , 10, init, end, multiplier);
+    },
   }
 })
 
@@ -106,22 +175,29 @@ var app = new Vue({
   body{
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem; 
+    /* background-color: black; */
   }
 
   div {
-    border: 1px solid black;
+    /* border: 1px solid black; */
     padding: 0.4rem;
     
   }
 
   #app {
     padding: 0px;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    border: 1px solid black;
+    /* background-color: rebeccapurple; */
   }
 
   .title-bar {
     text-align: center;
     margin: 0px;
     padding: 0px;
+    border-bottom: 3px double black;
+    
     /* margin-bottom: 0.4rem;   */
   }
 
@@ -140,12 +216,12 @@ var app = new Vue({
     margin: 0px;
     padding: 0px;
     font-size: 0.7rem;
+    border-top: 1px solid black;
   }
 
   .status-panel {
     padding: 0.2rem;
     border: 0px;
-    border-left: 1px solid black;
   }
 
   .about-panel {
@@ -166,6 +242,30 @@ var app = new Vue({
   #app-body .col {
     padding: 0px;
     margin: 0px;
+  }
+
+  .form-control {
+    font-size: 0.9rem;
+    width: 95%;
+  }
+
+  .results {
+    border: 1px solid black;
+    text-align: center;
+    /* font-size: 3rem; */
+  }
+
+  .row {
+    margin: 0px;
+  }
+
+
+  .dose p {
+    font-size: 3rem;
+  }
+
+  .redose p {
+    font-size: 3rem;
   }
 
 
