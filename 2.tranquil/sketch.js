@@ -1,56 +1,74 @@
-//var yoff = 0.0;        // 2nd dimension of perlin noise
+// height of fft == height/divisions
 var divisions = 5;
 var cnv;
 var speed = 5;
 
 
-
 function preload(){
-	song = loadSound('https://ia800600.us.archive.org/26/items/TheNightLoopTheBirthdayMassacreWebsiteMusic/The%20Night%20Loop%20%28The%20Birthday%20Massacre%20Website%20Music%29.mp3');
+  song = loadSound('https://ia800600.us.archive.org/26/items/TheNightLoopTheBirthdayMassacreWebsiteMusic/The%20Night%20Loop%20%28The%20Birthday%20Massacre%20Website%20Music%29.mp3');
 }
 
 function setup() {
+  background(108, 52, 131);
   
-	//background(220, 220, 220);
-	cnv = createCanvas(windowWidth, windowHeight);
-	background('#6C3483');
-	noFill();
-	strokeWeight(1);
-	stroke(255, 255, 255);
-	
-	
-	song.loop();
-  fft = new p5.FFT(0.9, 1024);
-  fft.setInput(song);
-	//fill('#9B59B6');
-	//nofill();
-	
-	stroke(0,100);
-}
 
-function mousePressed() {
-  if ( song.isPlaying() ) { // .isPlaying() returns a boolean
-    song.pause();
-  } else {
-    song.loop();
-  }
+  cnv = createCanvas(windowWidth, windowHeight);
+  noFill();
+
+  stroke(255, 255, 255, 200);
+  // source = new p5.AudioIn();
+  // source.start();
+  textFont('Courier New', 100);
+  text('t r a n q u i l', 10, windowHeight/2 - 15);
+
+  fft = new p5.FFT(0.9, 1024);
+  // fft.setInput(source);
+  fft.setInput(song);
+  song.loop();
 }
 
 function draw() {
-	var h = height/divisions;
+  var h = height/divisions;
   var spectrum = fft.analyze();
   var newBuffer = [];
 
-  var scaledSpectrum = splitOctaves(spectrum, 12);
+
+  str_R = 255
+  str_G = 255
+  str_B = 255
+  str_A = random(50,100);
+  stroke(str_R, str_G, str_B, str_A);
+  str = random(1,2)
+  strokeWeight(str);
+
+  octaves  = random(10,15);
+  var scaledSpectrum = splitOctaves(spectrum, octaves);
+  // var scaledSpectrum = spectrum;
   var len = scaledSpectrum.length;
 
-  background(108, 52, 131, 10);
-  //background('#6C3483');
-	// copy before clearing the background
+  red    = random(108,130);
+  green  = 52 + red - 108;
+  blue   = 131 + red - 108;
+  background(red, green, blue, 2);
+  // copy before clearing the background
+
+
+  speed = random(1,4);
+  // text('t r a n q u i l', 10, windowHeight/2 - 15);
+  // text('t r a n q u i l', 10, windowHeight/2 - 15);
+
   copy(cnv,0,0,width,height,0,speed,width,height);
-	
-	beginShape();
-		curveVertex(0, h);
+
+
+  
+  // text('t r a n q u i l', 10, windowHeight/2 - 15);
+  // text('t r a n q u i l', 10, windowHeight/2 - 15);
+
+  // draw shape
+  beginShape();
+
+    // one at the far corner
+    curveVertex(0, h);
 
     for (var i = 0; i < len; i++) {
       var point = smoothPoint(scaledSpectrum, i, 2);
@@ -61,13 +79,24 @@ function draw() {
 
     // one last point at the end
     curveVertex(width, h);
-  endShape(CLOSE);
-	
+
+  endShape();
 }
 
 
-
-
+/**
+ *  Divides an fft array into octaves with each
+ *  divided by three, or by a specified "slicesPerOctave".
+ *  
+ *  There are 10 octaves in the range 20 - 20,000 Hz,
+ *  so this will result in 10 * slicesPerOctave + 1
+ *
+ *  @method splitOctaves
+ *  @param {Array} spectrum Array of fft.analyze() values
+ *  @param {Number} [slicesPerOctave] defaults to thirds
+ *  @return {Array} scaledSpectrum array of the spectrum reorganized by division
+ *                                 of octaves
+ */
 function splitOctaves(spectrum, slicesPerOctave) {
   var scaledSpectrum = [];
   var len = spectrum.length;
@@ -141,4 +170,18 @@ function smoothPoint(spectrum, index, numberOfNeighbors) {
   val = val/smoothedPoints;
 
   return val;
+}
+
+
+
+function mousePressed() {
+  if ( song.isPlaying() ) { // .isPlaying() returns a boolean
+    song.pause();
+  } else {
+    song.loop();
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
